@@ -1,7 +1,7 @@
 import { createNanoEvents, Emitter, EventsMap } from "nanoevents"
 
 
-export class NanoEventEmitter<events extends EventsMap> {
+export default class NanoEventEmitter<events extends EventsMap> {
   emitter: Emitter
 
   constructor () {

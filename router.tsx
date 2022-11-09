@@ -1,9 +1,10 @@
-import { normalizePath } from 'vite'
+
 
 import { JSX } from 'solid-js'
 import { render } from 'solid-js/web'
 
-import { NanoEventEmitter } from './utils/events'
+import NanoEventEmitter from './utils/events'
+import normalizePath from './utils/normalize'
 
 
 type MatchResultType = {
