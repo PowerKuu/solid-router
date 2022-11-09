@@ -1,8 +1,9 @@
+import { normalizePath } from 'vite'
+
 import { JSX } from 'solid-js'
 import { render } from 'solid-js/web'
 
 import { NanoEventEmitter } from './utils/events'
-import normalize from 'normalize-path'
 
 
 type MatchResultType = {
@@ -71,9 +72,6 @@ interface StateType {
 // Deaclear variables
 const ipInfoUrl = "https://ipinfo.io/json"
 
-export function normalizePath(path: string): string {
-    return normalize(path)
-}
 export const rootElement = document.getElementById("root") ?? function(){
     const element = document.createElement("div")
     element.id = "root"
