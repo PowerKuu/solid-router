@@ -1,0 +1,16 @@
+{
+  "dependencies": {
+    "nanoevents": "^7.0.1",
+    "normalize-path": "^3.0.0",
+    "solid-js": "^1.6.1",
+    "vite": "^3.2.3"
+  },
+  "name": "@klevn/solid-router",
+  "version": "1.0.1",
+  "main": "router.tsx",
+  "keywords": [],
+  "author": "klevn",
+  "license": "ISC",
+  "devDependencies": {},
+  "description": ""
+}

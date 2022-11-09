@@ -1,0 +1,9 @@
+{
+    "compilerOptions": {
+        "target": "ESNEXT",
+        "moduleResolution": "node",
+        "jsx": "preserve",
+        "jsxImportSource": "solid-js",
+        "types": ["vite/client"],
+    }
+}
