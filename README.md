@@ -1,7 +1,7 @@
 # solid-router
 
 ## Example router
-```
+```tsx
 import { router } from "@klevn/solid-router" 
 
 router.add("/", () => {
@@ -21,7 +21,7 @@ router.update()
 ```
 
 ## Example route
-```
+```tsx
 import { Route } from "@klevn/solid-router" 
 
 export deafult function Component(){
