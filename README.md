@@ -1,6 +1,6 @@
 # Solid/vite-router
 
-### Intall: ```npm install @klevn/solid-router```
+Intall: ```npm install @klevn/solid-router```
 
 ## Example router
 ```tsx
