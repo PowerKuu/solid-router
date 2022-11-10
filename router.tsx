@@ -15,7 +15,9 @@ type MatchResultType = {
 type PathCallbackType = (dynamic:any) => JSX.Element|Promise<JSX.Element>|void
 
 type PathType = ({
-    call: (source:string) => Promise<boolean>,
+    add: (source:string) => Promise<boolean>,
+    clear: () => void
+
     priority: number
 })
 
@@ -162,11 +164,14 @@ export class _Router extends NanoEventEmitter<RouterEventsType> {
 
 
     public add(match:string, callback:PathCallbackType, query:string = "#app", reload:boolean = true, priority:number = 0) {
-        const call = async (source:string) => {
+        const clear = () => {
+            const inject = document.querySelector(query)
+            if (reload && inject) inject.innerHTML = ""
+        }
+
+        const add = async (source:string) => {
             const matchResult = this.matchPath(match, source)
             const inject = document.querySelector(query)
-
-            if (reload && inject) inject.innerHTML = ""
 
             if (matchResult.match) {
                 const dynamicCallback = matchResult.dynamic ?? undefined
@@ -176,12 +181,10 @@ export class _Router extends NanoEventEmitter<RouterEventsType> {
 
                 return true
             }
-
-            return false
         }
 
-        this.registeredPaths.push({call, priority})
-        return call
+        this.registeredPaths.push({clear, add, priority})
+        return {add, clear}
     }
 
     public async update(path: string = this.options.source, search: string | undefined = "", update: boolean = true) {  
@@ -204,7 +207,11 @@ export class _Router extends NanoEventEmitter<RouterEventsType> {
         this.emit("path", path)
 
         for(var registeredPath of registeredPathsStorted) {
-            const valid = await registeredPath.call(loweredPath)
+            registeredPath.clear()
+        }
+
+        for(var registeredPath of registeredPathsStorted) {
+            const valid = await registeredPath.add(loweredPath)
             calls.push(valid)
         }   
 
