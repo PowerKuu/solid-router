@@ -1,4 +1,4 @@
-# solid-router
+# Solid/vite-router
 
 ## Example router
 ```tsx
