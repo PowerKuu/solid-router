@@ -163,10 +163,10 @@ export class _Router extends NanoEventEmitter<RouterEventsType> {
 
 
 
-    public add(match:string, callback:PathCallbackType, query:string = "#app", reload:boolean = true, priority:number = 0) {
+    public add(match:string, callback:PathCallbackType, query:string = "#app", clearInject:boolean = true, priority:number = 0) {
         const clear = () => {
             const inject = document.querySelector(query)
-            if (reload && inject) inject.innerHTML = ""
+            if (clearInject && inject) inject.innerHTML = ""
         }
 
         const add = async (source:string) => {
@@ -299,9 +299,9 @@ export const language = new _LanguageManger()
 //
 
 // Link component 
-interface LinkAttr {path?: string, search?: string, reload?: boolean, children:any}
+interface LinkAttr {path?: string, search?: string, update?: boolean, children:any}
 
-export function Route({path, search, reload, children}:LinkAttr) {
-    return <span onclick = {() => {router.update(path, search, reload)}}>{children}</span>
+export function Route({path, search, update, children}:LinkAttr) {
+    return <span onclick = {() => {router.update(path, search, update)}}>{children}</span>
 }
 //
