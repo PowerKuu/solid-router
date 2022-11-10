@@ -1,5 +1,3 @@
-
-
 import { JSX } from 'solid-js'
 import { render } from 'solid-js/web'
 
