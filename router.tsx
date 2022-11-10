@@ -12,7 +12,7 @@ type MatchResultType = {
     dynamic?: Object
 }
 
-type PathCallbackType = (dynamic:any) => JSX.Element|Promise<JSX.Element>
+type PathCallbackType = (dynamic:any) => JSX.Element|Promise<JSX.Element>|undefined
 
 type PathType = ({
     call: (source:string) => Promise<boolean>,
@@ -178,7 +178,8 @@ export class _Router extends NanoEventEmitter<RouterEventsType> {
             if (matchResult.match) {
                 const dynamicCallback = matchResult.dynamic ?? undefined
                 const returnJSX = await callback(dynamicCallback)
-                render(() => returnJSX, this.options.inject)
+
+                if (returnJSX) render(() => returnJSX, this.options.inject)
 
                 return true
             }
