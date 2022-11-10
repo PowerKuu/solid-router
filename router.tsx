@@ -3,6 +3,7 @@ import { render } from 'solid-js/web'
 
 import NanoEventEmitter from './utils/events'
 import normalizePath from './utils/normalize'
+import uuid4 from './utils/uuid'
 
 
 type MatchResultType = {
@@ -90,6 +91,8 @@ export class _Router extends NanoEventEmitter<RouterEventsType> {
     path?: string 
     search?: string
 
+    dynamic:Object
+
     constructor(){
         super()
         this.language = navigator.language || navigator["userLanguage"]
@@ -173,6 +176,7 @@ export class _Router extends NanoEventEmitter<RouterEventsType> {
 
             if (matchResult.match) {
                 const dynamicCallback = matchResult.dynamic ?? undefined
+                this.dynamic = dynamicCallback
                 const returnJSX = await callback(dynamicCallback)
 
                 if (returnJSX && inject) render(() => returnJSX, inject)
@@ -296,10 +300,24 @@ export class _LanguageManger {
 export const language = new _LanguageManger()
 //
 
-// Link component 
-interface LinkAttr {path?: string, search?: string, update?: boolean, children:any}
 
-export function Route({path, search, update, children}:LinkAttr) {
+// Components
+interface LinkAttr {path?: string, search?: string, update?: boolean, children:any}
+interface RouteAttr {match: string, clearInject?: boolean, priority?: number, children:any}
+
+const UUID = uuid4()
+
+export function Link({path, search, update, children}:LinkAttr) {
     return <span onclick = {() => {router.update(path, search, update)}}>{children}</span>
+}
+
+export function Router() {
+    return <span id={UUID}></span>
+}
+
+export function Route({match, clearInject, priority, children}:RouteAttr) {
+    router.add(match, () => {
+        return children
+    }, `#${UUID}`, clearInject, priority)
 }
 //
