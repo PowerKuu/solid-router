@@ -12,10 +12,10 @@ type MatchResultType = {
     dynamic?: Object
 }
 
-type PathCallbackType = (dynamic:any) => JSX.Element|Promise<JSX.Element>|undefined
+type PathCallbackType = (dynamic:any) => JSX.Element|Promise<JSX.Element>|void
 
 type PathType = ({
-    call: (source:string) => Promise<boolean>,
+    call: (source:string, reload:boolean) => Promise<boolean>,
     priority: number
 })
 
@@ -30,7 +30,6 @@ interface OptionsType {
     search: string,
     lowercase: boolean,
     fallback: RouterEventsType["404"],
-    inject: HTMLElement
 }
 
 interface FilterTypes {
@@ -73,18 +72,10 @@ interface StateType {
 // Deaclear variables
 const ipInfoUrl = "https://ipinfo.io/json"
 
-export const rootElement = document.getElementById("root") ?? function(){
-    const element = document.createElement("div")
-    element.id = "root"
-    document.body.appendChild(element)
-    return element
-}()
-
 export const deafultOptions:OptionsType = {
     source: window.location.pathname,
     search: window.location.search,
     lowercase: false,
-    inject: rootElement,
 
     fallback: () => {}
 }
@@ -109,8 +100,7 @@ export class _Router extends NanoEventEmitter<RouterEventsType> {
         this.options.source = options.source ?? deafultOptions.source
         this.options.search = options.search ?? deafultOptions.search
         this.options.lowercase = options.lowercase ?? deafultOptions.lowercase
-        this.options.inject = options.inject ?? deafultOptions.inject
-
+        
         if (options.fallback) {
             //! Remvoe the event listener if it exists
             if (this.options.fallback) this.options.fallback("")
@@ -122,11 +112,11 @@ export class _Router extends NanoEventEmitter<RouterEventsType> {
     }
 
     public async userInfo(): Promise<InfoType|false>{
-        const IpInfoFetch = await fetch(ipInfoUrl)
-        if (IpInfoFetch.status != 200) return false
-        const IpInfo = await IpInfoFetch.json()
+        const ipInfoFetch = await fetch(ipInfoUrl)
+        if (ipInfoFetch.status != 200) return false
+        const ipInfo = await ipInfoFetch.json()
 
-        return IpInfo
+        return ipInfo
     }
 
     public async userFilter<FilterType extends keyof FilterTypes>(filter:FilterType, options:FilterTypes[FilterType]):Promise<boolean> {
@@ -171,15 +161,17 @@ export class _Router extends NanoEventEmitter<RouterEventsType> {
 
 
 
-    public add(match:string, callback:PathCallbackType, priority:number = 0) {
-        const call = async (source:string) => {
+    public add(match:string, callback:PathCallbackType, query:string = "#root", priority:number = 0) {
+        const call = async (source:string, reload:boolean) => {
             const matchResult = this.matchPath(match, source)
     
             if (matchResult.match) {
                 const dynamicCallback = matchResult.dynamic ?? undefined
                 const returnJSX = await callback(dynamicCallback)
+                const inject = document.querySelector(query)
 
-                if (returnJSX) render(() => returnJSX, this.options.inject)
+                if (reload && inject) inject.innerHTML = ""
+                if (returnJSX && inject) render(() => returnJSX, inject)
 
                 return true
             }
@@ -204,8 +196,6 @@ export class _Router extends NanoEventEmitter<RouterEventsType> {
         if (!state) return
         const {path, search} = state
 
-        this.options.inject.innerHTML = ""
-
         const registeredPathsStorted = this.registeredPaths.sort((a, b) => a.priority - b.priority)
         const calls:boolean[] = []
 
@@ -213,7 +203,7 @@ export class _Router extends NanoEventEmitter<RouterEventsType> {
         this.emit("path", path)
 
         for(var registeredPath of registeredPathsStorted) {
-            const valid = await registeredPath.call(loweredPath)
+            const valid = await registeredPath.call(loweredPath, true)
             calls.push(valid)
         }   
 
