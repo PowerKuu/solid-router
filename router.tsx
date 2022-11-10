@@ -15,7 +15,7 @@ type MatchResultType = {
 type PathCallbackType = (dynamic:any) => JSX.Element|Promise<JSX.Element>|void
 
 type PathType = ({
-    call: (source:string, reload:boolean) => Promise<boolean>,
+    call: (source:string) => Promise<boolean>,
     priority: number
 })
 
@@ -161,16 +161,17 @@ export class _Router extends NanoEventEmitter<RouterEventsType> {
 
 
 
-    public add(match:string, callback:PathCallbackType, query:string = "#root", priority:number = 0) {
-        const call = async (source:string, reload:boolean) => {
+    public add(match:string, callback:PathCallbackType, query:string = "#app", reload:boolean = true, priority:number = 0) {
+        const call = async (source:string) => {
             const matchResult = this.matchPath(match, source)
-    
+            const inject = document.querySelector(query)
+
+            if (reload && inject) inject.innerHTML = ""
+
             if (matchResult.match) {
                 const dynamicCallback = matchResult.dynamic ?? undefined
                 const returnJSX = await callback(dynamicCallback)
-                const inject = document.querySelector(query)
 
-                if (reload && inject) inject.innerHTML = ""
                 if (returnJSX && inject) render(() => returnJSX, inject)
 
                 return true
@@ -183,13 +184,13 @@ export class _Router extends NanoEventEmitter<RouterEventsType> {
         return call
     }
 
-    public async update(path: string = this.options.source, search: string | undefined = "", reload: boolean = true) {  
+    public async update(path: string = this.options.source, search: string | undefined = "", update: boolean = true) {  
         path = normalizePath(path)
-
+        
         const fullPath = search === "" || !search ? (path === this.path || !this.path ? (path + this.options.search) : path) : path + search
 
         window.history.pushState({path, search}, "", fullPath)
-        if (reload) this.onPathState({path, search})
+        if (update) this.onPathState({path, search})
     } 
   
     private async onPathState(state: Partial<StateType>) {
@@ -203,7 +204,7 @@ export class _Router extends NanoEventEmitter<RouterEventsType> {
         this.emit("path", path)
 
         for(var registeredPath of registeredPathsStorted) {
-            const valid = await registeredPath.call(loweredPath, true)
+            const valid = await registeredPath.call(loweredPath)
             calls.push(valid)
         }   
 
