@@ -1,9 +1,9 @@
-import { JSX } from 'solid-js'
-import { render } from 'solid-js/web'
+import { JSX } from "solid-js"
+import { render as solidRender } from "solid-js/web"
 
-import NanoEventEmitter from './utils/events'
-import normalizePath from './utils/normalize'
-import uuid4 from './utils/uuid'
+import NanoEventEmitter from "./utils/events"
+import normalizePath from "./utils/normalize"
+import uuid4 from "./utils/uuid"
 
 
 type MatchResultType = {
@@ -179,7 +179,7 @@ export class _Router extends NanoEventEmitter<RouterEventsType> {
                 this.dynamic = dynamicCallback
                 const returnJSX = await callback(dynamicCallback)
 
-                if (returnJSX && inject) render(() => returnJSX, inject)
+                if (returnJSX && inject) solidRender(() => returnJSX, inject)
 
                 return true
             }
@@ -235,7 +235,7 @@ export class _Router extends NanoEventEmitter<RouterEventsType> {
         const dynamicMatch = /\[(\w+)\]/g
         const star = /\*/g
 
-        const regexString = match.replaceAll(dynamicMatch, '([^/]+)').replaceAll(star, '[\\s\\S]*')
+        const regexString = match.replaceAll(dynamicMatch, "([^/]+)").replaceAll(star, "[\\s\\S]*")
         const matchRawArray = [
             ...source.matchAll(
                 new RegExp(regexString, "g")
@@ -300,22 +300,27 @@ export class _LanguageManger {
 export const language = new _LanguageManger()
 //
 
+// Custom render
+export function render(jsx:JSX.Element, element:HTMLElement) {
+    solidRender(() => jsx, element)
+    router.update()
+}
 
 // Components
-interface LinkAttr {path?: string, search?: string, update?: boolean, children:any}
-interface RouteAttr {match: string, clearInject?: boolean, priority?: number, children:any}
+interface LinkAttr {path?: string, search?: string, update?: boolean, children: JSX.Element}
+interface RouteAttr {match: string, clearInject?: boolean, priority?: number, children: JSX.Element}
 
 const UUID = uuid4()
 
-export function Link({path, search, update, children}:LinkAttr) {
+export function Link({path, search, update, children}: LinkAttr) {
     return <span onclick = {() => {router.update(path, search, update)}}>{children}</span>
 }
 
-export function Router() {
-    return <span id={UUID}></span>
+export function Router({children}:{children: JSX.Element}) {
+    return <span id={UUID}>{children}</span>
 }
 
-export function Route({match, clearInject, priority, children}:RouteAttr) {
+export function Route({match, clearInject, priority, children}: RouteAttr) {
     router.add(match, () => {
         return children
     }, `#${UUID}`, clearInject, priority)
