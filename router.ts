@@ -96,6 +96,10 @@ class Router extends NanoEventEmitter<RouterEventsType> {
         return
     }
 
+    public redirect(url:string) {
+        window.location.replace(url)
+    }
+
     public getQueryParameter(id: string): string {
         if (!this.currentUrl) return
         return new Proxy(new URLSearchParams(this.currentUrl.search), {
