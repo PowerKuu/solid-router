@@ -1,0 +1,4 @@
+node_modules
+.DS_store
+test
+old_router.tsx
