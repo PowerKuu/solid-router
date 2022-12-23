@@ -11,11 +11,10 @@ type MatchResultType = {
     dynamic?: Object
 }
 
-type PathCallbackType = (dynamic:any) => JSX.Element|Promise<JSX.Element>|void
+type PathCallbackType = (dynamic:any) => JSX.Element|void|Promise<JSX.Element|void>
 
 type PathType = ({
-    add: (source:string) => Promise<boolean>,
-    clear: () => void
+    test: (source:string) => Promise<boolean>
 
     priority: number
 })
@@ -28,7 +27,6 @@ interface RouterEventsType {
 
 interface OptionsType {
     source: string,
-    search: string,
     lowercase: boolean,
     fallback: RouterEventsType["404"],
 }
@@ -66,16 +64,14 @@ interface LanguageMapType {
 }
 
 interface StateType {
-    path: string,
-    search: string,
+    path: string
 }
 
 // Deaclear variables
 const ipInfoUrl = "https://ipinfo.io/json"
 
 export const deafultOptions:OptionsType = {
-    source: window.location.pathname,
-    search: window.location.search,
+    source: window.location.href.replace(window.location.origin, ""),
     lowercase: false,
 
     fallback: () => {}
@@ -101,7 +97,6 @@ export class _Router extends NanoEventEmitter<RouterEventsType> {
 
     public define(options:Partial<OptionsType>) {
         this.options.source = options.source ?? deafultOptions.source
-        this.options.search = options.search ?? deafultOptions.search
         this.options.lowercase = options.lowercase ?? deafultOptions.lowercase
         
         if (options.fallback) {
@@ -164,13 +159,13 @@ export class _Router extends NanoEventEmitter<RouterEventsType> {
 
 
 
-    public add(match:string, callback:PathCallbackType, query:string = "#app", clearInject:boolean = true, priority:number = 0) {
+    public add(match:string, callback:PathCallbackType, clearInject:boolean, priority:number = 0, query:string = "#app"):PathType {
         const clear = () => {
             const inject = document.querySelector(query)
             if (clearInject && inject) inject.innerHTML = ""
         }
 
-        const add = async (source:string) => {
+        const test = async (source:string) => {
             const matchResult = this.matchPath(match, source)
             const inject = document.querySelector(query)
 
@@ -179,49 +174,43 @@ export class _Router extends NanoEventEmitter<RouterEventsType> {
                 this.dynamic = dynamicCallback
                 const returnJSX = await callback(dynamicCallback)
 
+                clear()
                 if (returnJSX && inject) solidRender(() => returnJSX, inject)
 
                 return true
             }
         }
 
-        this.registeredPaths.push({clear, add, priority})
-        return {add, clear}
+        this.registeredPaths.push({test, priority})
+        return {test, priority}
     }
 
-    public async update(path: string = this.options.source, search: string | undefined = "", update: boolean = true) {  
-        path = normalizePath(path)
+    public async update(path: string = this.options.source) 
+    {  
+        const url = (location.origin + normalizePath(path))
         
-        const fullPath = search === "" || !search ? (path === this.path || !this.path ? (path + this.options.search) : path) : path + search
-
-        window.history.pushState({path, search}, "", fullPath)
-        if (update) this.onPathState({path, search})
+        window.history.pushState(path, "", url)
+        this.onPathState(path)
     } 
   
-    private async onPathState(state: Partial<StateType>) {
-        if (!state) return
-        const {path, search} = state
+    private async onPathState(path: string) {
+        if (!path) return
 
         const registeredPathsStorted = this.registeredPaths.sort((a, b) => a.priority - b.priority)
         const calls:boolean[] = []
 
-        const loweredPath = this.options.lowercase ? path.toLowerCase() : path
         this.emit("path", path)
 
         for(var registeredPath of registeredPathsStorted) {
-            registeredPath.clear()
-        }
-
-        for(var registeredPath of registeredPathsStorted) {
-            const valid = await registeredPath.add(loweredPath)
+            const valid = await registeredPath.test(path)
             calls.push(valid)
         }   
 
-        this.search = search
+
         this.path = path
 
         const error = !calls.includes(true)
-
+        
         if (error) this.emit("404", path)
 
         this.emit("load", path, error)
@@ -229,6 +218,7 @@ export class _Router extends NanoEventEmitter<RouterEventsType> {
 
 
     private matchPath(match:string, source: string): MatchResultType {
+        console.log(source, match)
         match = normalizePath(match)
         source = normalizePath(source)
 
@@ -307,13 +297,13 @@ export function render(jsx:JSX.Element, element:HTMLElement) {
 }
 
 // Components
-interface LinkAttr {path?: string, search?: string, update?: boolean, children: JSX.Element}
-interface RouteAttr {match: string, clearInject?: boolean, priority?: number, children: JSX.Element}
+interface LinkAttr {url?: string, children: JSX.Element}
+interface RouteAttr {match: string, clearInject: boolean, priority?: number, children: JSX.Element}
 
 const UUID = uuid4()
 
-export function Link({path, search, update, children}: LinkAttr) {
-    return <span onclick = {() => {router.update(path, search, update)}}>{children}</span>
+export function Link({url, children}: LinkAttr) {
+    return <span onclick = {() => {router.update(url)}}>{children}</span>
 }
 
 export function Router({children}:{children: JSX.Element}) {
@@ -323,6 +313,6 @@ export function Router({children}:{children: JSX.Element}) {
 export function Route({match, clearInject, priority, children}: RouteAttr) {
     router.add(match, () => {
         return children
-    }, `#${UUID}`, clearInject, priority)
+    }, clearInject, priority, `#${UUID}`)
 }
 //

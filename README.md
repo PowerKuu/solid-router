@@ -6,7 +6,7 @@ Use npm: ```npm install @klevn/solid-router```
 ```tsx
 import { router } from "@klevn/solid-router" 
 
-router.add("/", () => {
+router.add("/", async () => {
     return <div>Hello world</div>
 })
 
@@ -14,19 +14,9 @@ router.add("/foo/[dynamic]", ({dynamic}) => {
     return <div>{dynamic}</div>
 })
 
-router.add("/bar/*", () => {
-    return <div>Hello world with match all path</div>
+router.add("404", ({dynamic}) => {
+    return <p>404</p>
 })
-
 // Important
 router.update()
-```
-
-## Example route
-```tsx
-import { Route } from "@klevn/solid-router" 
-
-export deafult function Component(){
-  return <Route path="/foo">Click me</Route>
-}
 ```
