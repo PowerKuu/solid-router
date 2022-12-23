@@ -42,6 +42,7 @@ class Router extends NanoEventEmitter<RouterEventsType> {
     public defaultUrl = window.location.href
     public targetQuerySelector: string = "#app"
 
+    public currentDynamicMap:DynamicMap = {}
     public currentUrl?:ParsedURL
 
     private routes: Route[] = []
@@ -91,16 +92,19 @@ class Router extends NanoEventEmitter<RouterEventsType> {
             }
         }
 
-        //404
         if (route404) await this.load(route404, parsedUrl, {})
         return
     }
 
-    public getQueryParameter (id: string): string {
+    public getQueryParameter(id: string): string {
         if (!this.currentUrl) return
         return new Proxy(new URLSearchParams(this.currentUrl.search), {
             get: (searchParams, prop) => searchParams.get(String(prop)),
         })[id]
+    }
+
+    public getDynamicPath(key: string): string {
+        return this.currentDynamicMap[key]
     }
 
     public resetScroll() {
@@ -114,6 +118,7 @@ class Router extends NanoEventEmitter<RouterEventsType> {
 
     private async load(route:Route, matchedUrl:ParsedURL, dynamicMap:DynamicMap) {
         this.currentUrl = matchedUrl
+        this.currentDynamicMap = dynamicMap
 
         const element = document.querySelector(this.targetQuerySelector) as HTMLElement
 
@@ -132,8 +137,6 @@ class Router extends NanoEventEmitter<RouterEventsType> {
 
         const sourceSplit = source.split("/").filter(_ => _)
         const inputSplit = input.split("/").filter(_ => _)
-
-        console.log(sourceSplit, inputSplit)
 
         for (var [sourcePath, inputPath] of zip(sourceSplit, inputSplit)) {
             if (inputPath == undefined || sourcePath == undefined) return false
