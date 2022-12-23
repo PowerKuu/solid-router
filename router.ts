@@ -126,12 +126,19 @@ class Router extends NanoEventEmitter<RouterEventsType> {
 
         const element = document.querySelector(this.targetQuerySelector) as HTMLElement
 
-        while(element.firstChild){element.removeChild(element.firstChild)}   
+        if (!element.parentElement) throw new Error("Target element has to have a parent in router")
+
+        const clone = element.cloneNode(false)
+        const parent = element.parentElement
+
+        parent.removeChild(element)
+        parent.appendChild(clone)
         
         const target = await route.callback(dynamicMap)
+
         if (!target) return
         
-        render(() => target, element)
+        render(() => target, clone)
 
         this.emit("load", matchedUrl)
     }
