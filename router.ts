@@ -7,26 +7,26 @@ import normalizePath from "./utils/normalize"
 import zip from "./utils/zip"
 import NanoEventEmitter from "./utils/events"
 
-type RouteCallback = (dynamicMap:DynamicMap) => JSX.Element|Promise<JSX.Element>|void
+export type RouteCallback = (dynamicMap:DynamicMap) => JSX.Element|Promise<JSX.Element>|void
 
-type ParsedURL = ReturnType<typeof parseUrl>
+export type ParsedURL = ReturnType<typeof parseUrl>
 
-interface Route {
+export interface Route {
     url:string,
     parsedUrl: ParsedURL,
     callback: RouteCallback
 }
 
-interface DynamicMap {
+export interface DynamicMap {
     [key:string]: string
 }
 
-interface RouterEventsType {
+export interface RouterEventsType {
     "load": (url: ParsedURL) => void,
     "update": (url: ParsedURL) => void
 }
 
-function parseUrl(url:string) {
+export function parseUrl(url:string) {
     try {
         const parsedUrl = parseUrlLib(url, true)
 
@@ -38,7 +38,7 @@ function parseUrl(url:string) {
     }
 }
 
-class Router extends NanoEventEmitter<RouterEventsType> {
+export class Router extends NanoEventEmitter<RouterEventsType> {
     public defaultUrl = window.location.href
     public targetQuerySelector: string = "#app"
 

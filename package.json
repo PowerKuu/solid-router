@@ -2,10 +2,11 @@
   "dependencies": {
     "nanoevents": "^7.0.1",
     "parse-url": "^8.1.0",
-    "solid-js": "^1.6.1"
+    "solid-js": "^1.6.1",
+    "vite": "^4.0.3"
   },
   "name": "@klevn/solid-router",
-  "version": "5.0.5",
+  "version": "6.0.0",
   "main": "router.ts",
   "keywords": [],
   "author": "klevn",
