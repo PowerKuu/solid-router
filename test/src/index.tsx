@@ -15,10 +15,4 @@ router.add("/[home]", (test) => {
     return hello()
 })
 
-router.add("404", () => {
-    console.log(router.getQueryParameter("test"))
-    return <p>404</p>
-})
-
-
 router.update()

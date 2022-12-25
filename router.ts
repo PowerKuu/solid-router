@@ -7,8 +7,6 @@ import normalizePath from "./utils/normalize"
 import zip from "./utils/zip"
 import NanoEventEmitter from "./utils/events"
 
-import default404 from "./utils/default404"
-
 export type RouteCallback = (dynamicMap:DynamicMap) => JSX.Element|Promise<JSX.Element>|void
 
 export type ParsedURL = ReturnType<typeof parseUrl>
@@ -81,7 +79,7 @@ export class Router extends NanoEventEmitter<RouterEventsType> {
         var route404:Route = {
             url: "404",
             parsedUrl: parseUrl("404"),
-            callback: default404
+            callback: () => undefined
         }
 
         for (var route of this.routes) {
