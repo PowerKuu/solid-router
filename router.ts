@@ -7,6 +7,8 @@ import normalizePath from "./utils/normalize"
 import zip from "./utils/zip"
 import NanoEventEmitter from "./utils/events"
 
+//! Create lazy load function export wait and the load (callback function)
+
 export type RouteCallback = (dynamicMap:DynamicMap) => JSX.Element|Promise<JSX.Element>|void
 
 export type ParsedURL = ReturnType<typeof parseUrl>
