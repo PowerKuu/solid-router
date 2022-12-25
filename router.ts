@@ -7,7 +7,8 @@ import normalizePath from "./utils/normalize"
 import zip from "./utils/zip"
 import NanoEventEmitter from "./utils/events"
 
-//! Create lazy load function export wait and the load (callback function)
+var lazyLoadQueue = 0
+const lazyLoadAddition = 2500
 
 export type RouteCallback = (dynamicMap:DynamicMap) => JSX.Element|Promise<JSX.Element>|void
 
@@ -37,6 +38,21 @@ export function parseUrl(url:string) {
         const parsedUrl = parseUrlLib(window.location.origin + normalizePath(url), true)
 
         return parsedUrl
+    }
+}
+
+export function lazyLoad<T extends unknown>(func:() => T): () => T {
+    var data:T|undefined
+
+    lazyLoadQueue += lazyLoadAddition
+
+    setTimeout(() => {
+        data = func()
+    }, lazyLoadQueue)
+
+    return () => {
+        if (data) return data
+        else return func()
     }
 }
 
