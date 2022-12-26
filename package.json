@@ -6,7 +6,7 @@
     "vite": "^4.0.3"
   },
   "name": "@klevn/solid-router",
-  "version": "9.0.5",
+  "version": "10.0.0",
   "main": "router.ts",
   "keywords": [],
   "author": "klevn",
