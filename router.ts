@@ -8,7 +8,7 @@ import zip from "./utils/zip"
 import NanoEventEmitter from "./utils/events"
 
 var lazyLoadQueue = 0
-const lazyLoadAddition = 2500
+const lazyLoadTime = 2500
 
 export type RouteCallback = (dynamicMap:DynamicMap) => JSX.Element|Promise<JSX.Element>|void
 
@@ -41,18 +41,26 @@ export function parseUrl(url:string) {
     }
 }
 
-export function lazyLoad<T extends unknown>(func:() => T): () => T {
-    var data:T|undefined
+export function lazyLoad<T extends unknown>(func:() => T): () => Promise<T> {
+    var data:Promise<T>|undefined
 
-    lazyLoadQueue += lazyLoadAddition
+    lazyLoadQueue += lazyLoadTime
+
+    const getData = async () => {
+        const awaitedData = await func()
+        lazyLoadQueue -= lazyLoadTime
+
+        return awaitedData
+    }
 
     setTimeout(() => {
-        data = func()
+        data = getData()
     }, lazyLoadQueue)
+
 
     return () => {
         if (data) return data
-        else return func()
+        else return getData()
     }
 }
 
